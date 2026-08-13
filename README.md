@@ -2,7 +2,7 @@
 
 App de seguimiento del Plan 30K (dieta, entrenos, peso, agua, agenda) instalable en el celular como PWA.
 
-**Versión:** 1.0.0
+**Versión:** 1.1.0
 
 ## Arquitectura
 
@@ -33,4 +33,5 @@ Ver [DEPLOY.md](DEPLOY.md).
 
 ## Changelog
 
+- **1.1.0** (2026-08-13) — Botón 🔄 en Inicio: `refreshGarmin` dispara el workflow del bot (majjjz/panel-max-bot) vía API de GitHub desde Apps Script (PAT en Script Property `GH_TOKEN`) y auto-recarga datos a los 2 min.
 - **1.0.0** (2026-08-13) — Port inicial desde Apps Script HTMLService a PWA: shim `google.script.run`→fetch, manifest + service worker + iconos, modal de conexión, caché offline de datos.
