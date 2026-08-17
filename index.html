@@ -210,8 +210,8 @@
         <div class="pn-lg"><span><i class="pn-sw" style="background:var(--acc)"></i>Consumidas</span><span><i class="pn-sw" style="background:var(--sage)"></i>Quemadas</span><span style="margin-left:auto">verde=déficit</span></div></div>
       <div class="card"><div class="pn-ct">🍩 En qué se quemó</div><div class="pn-center"><div id="pnDonut"></div><div id="pnDonutLg"></div></div></div>
       <div class="card"><div class="pn-ct">😴 Sueño <b id="pnSlpv"></b></div><div class="pn-chart" id="pnSlp" style="height:140px"></div></div>
-      <div class="card"><div class="pn-ct">🫀 HRV <b id="pnHrvv"></b></div><svg id="pnHrv" width="100%" height="140" viewBox="0 0 300 140" preserveAspectRatio="none"></svg></div>
-      <div class="card"><div class="pn-ct">⚖️ Peso <b id="pnPesov"></b></div><svg id="pnPeso" width="100%" height="140" viewBox="0 0 300 140" preserveAspectRatio="none"></svg></div>
+      <div class="card"><div class="pn-ct">🫀 HRV <b id="pnHrvv"></b></div><div id="pnHrv" style="overflow:hidden;height:140px"></div></div>
+      <div class="card"><div class="pn-ct">⚖️ Peso <b id="pnPesov"></b></div><div id="pnPeso" style="overflow:hidden;height:140px"></div></div>
       <div class="card"><div class="pn-ct">👟 Pasos <b id="pnStepv"></b></div><div class="pn-chart" id="pnStep" style="height:96px"></div></div>
     </div>
   </div>
@@ -673,9 +673,10 @@
   function dl(s){var p=s.split('-');return (+p[2])+' '+M[+p[1]-1];}
   function isoWeek(s){var t=new Date(s+'T00:00');t.setDate(t.getDate()+4-(t.getDay()||7));var y=new Date(t.getFullYear(),0,1);return 'S'+Math.ceil((((t-y)/864e5)+1)/7);}
   function av(a,k){return a.length?Math.round(a.reduce(function(s,x){return s+(+x[k]||0);},0)/a.length):0;}
+  var PLAN_START='2026-08-10';
   function curMon(){var n=new Date();return n.getFullYear()+'-'+(n.getMonth()<9?'0':'')+(n.getMonth()+1);}
-  function fData(){return DATA.days.filter(function(x){return PER==='all'?true:x.d.indexOf(curMon())===0;});}
-  function fW(){return DATA.weights.filter(function(x){return PER==='all'?true:x[0].indexOf(curMon())===0;});}
+  function fData(){return DATA.days.filter(function(x){return x.d>=PLAN_START&&(PER==='all'?true:x.d.indexOf(curMon())===0);});}
+  function fW(){return DATA.weights.filter(function(x){return x[0]>=PLAN_START&&(PER==='all'?true:x[0].indexOf(curMon())===0);});}
   function agg(list){
     if(VIEW==='dia')return list.map(function(x){var o={};for(var k in x)o[k]=x[k];o.lab=dl(x.d);return o;});
     var g={};list.forEach(function(x){var k=isoWeek(x.d);(g[k]=g[k]||[]).push(x);});
@@ -741,7 +742,7 @@
     var fill='M'+pts[0][0].toFixed(1)+' '+(H-pad)+' '+pts.map(function(p){return 'L'+p[0].toFixed(1)+' '+p[1].toFixed(1);}).join(' ')+' L'+pts[pts.length-1][0].toFixed(1)+' '+(H-pad)+' Z';
     var dots=pts.map(function(p){return '<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="3" fill="'+color+'"/><text x="'+p[0].toFixed(1)+'" y="'+(p[1]-7).toFixed(1)+'" text-anchor="middle" fill="#efe7d8" font-size="10" font-weight="700">'+fmt(p[2])+'</text>';}).join('');
     var labs=pts.map(function(p,i){return '<text x="'+p[0].toFixed(1)+'" y="136" text-anchor="middle" fill="#9c8f7b" font-size="8">'+list[i].lab+'</text>';}).join('');
-    set(id,'<path d="'+fill+'" fill="'+color+'22"/><path d="'+line+'" fill="none" stroke="'+color+'" stroke-width="2.5"/>'+dots+labs);
+    set(id,'<svg width="100%" height="140" viewBox="0 0 300 140" preserveAspectRatio="none"><path d="'+fill+'" fill="'+color+'22"/><path d="'+line+'" fill="none" stroke="'+color+'" stroke-width="2.5"/>'+dots+labs+'</svg>');
   }
   function hrv(list){area('pnHrv',list,'hrv','#c07a6b',function(v){return Math.round(v);},6);txt('pnHrvv',list.length?('último '+list[list.length-1].hrv):'');}
   function peso(){var W=fW(),list=W.map(function(w){return {lab:dl(w[0]),peso:w[1]};});area('pnPeso',list,'peso','#cbb287',function(v){return(+v).toFixed(1);},0.5);txt('pnPesov',W.length?(W[W.length-1][1]+' kg'):'');}
