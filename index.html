@@ -675,8 +675,8 @@
   function av(a,k){return a.length?Math.round(a.reduce(function(s,x){return s+(+x[k]||0);},0)/a.length):0;}
   var PLAN_START='2026-08-10';
   function curMon(){var n=new Date();return n.getFullYear()+'-'+(n.getMonth()<9?'0':'')+(n.getMonth()+1);}
-  function fData(){return DATA.days.filter(function(x){return x.d>=PLAN_START&&(PER==='all'?true:x.d.indexOf(curMon())===0);});}
-  function fW(){return DATA.weights.filter(function(x){return x[0]>=PLAN_START&&(PER==='all'?true:x[0].indexOf(curMon())===0);});}
+  function fData(){return DATA.days.filter(function(x){return x.d>=PLAN_START&&(PER==='all'?true:x.d.indexOf(curMon())===0);}).reverse();}
+  function fW(){return DATA.weights.filter(function(x){return x[0]>=PLAN_START&&(PER==='all'?true:x[0].indexOf(curMon())===0);}).reverse();}
   function agg(list){
     if(VIEW==='dia')return list.map(function(x){var o={};for(var k in x)o[k]=x[k];o.lab=dl(x.d);return o;});
     var g={};list.forEach(function(x){var k=isoWeek(x.d);(g[k]=g[k]||[]).push(x);});
