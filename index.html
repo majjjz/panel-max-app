@@ -375,7 +375,7 @@
 
   var START=new Date(2026,7,10), MES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'], DOW=['LUN','MAR','MIÉ','JUE','VIE','SÁB','DOM'], LR=[8,11,14,11,17,21,24,'30 🏁'];
   function SS(ic,t,tod){return {ic:ic,t:t,tod:tod};}
-  function genWeek(km){return [[SS('🚴','Bici Z2','AM'),SS('🏋️','Pierna','PM')],[SS('🏃','Carrera Calidad','AM')],[SS('🏊','Natación','AM'),SS('🏋️','Push','PM')],[SS('🚴','Bici Z2','AM'),SS('🏋️','Pull','PM')],[SS('🏃','Trote fácil','AM')],[SS('🏃','Tirada larga '+km+' km 👑','AM')],[SS('🏊','Nado regen','AM')]];}
+  function genWeek(km){return [[SS('🚴','Bici Z2','AM'),SS('🏋️','Push','PM')],[SS('🏃','Calidad','AM'),SS('🏋️','Pierna','PM')],[SS('🚴','Bici Z2','AM'),SS('🏋️','Pull','PM')],[SS('🏃','Trote fácil','AM')],[SS('🏊','Natación suave','AM')],[SS('🏃','Tirada larga '+km+' km 👑','AM')],[SS('🏊','Natación regen','AM')]];}
   function weekData(wi){
     if(wi===0) return [[{ic:'🏋️',t:'Espalda + Tríceps',tod:'PM',pre:true},{ic:'🏃',t:'Trote',tod:'AM',pre:true}],[SS('🏃','Carrera Calidad','AM')],[SS('🏊','Natación','AM'),SS('🏋️','Pecho+Hombro+Bíceps','PM')],[SS('🚴','Bici Z2','AM'),SS('🏋️','Pierna','PM')],[SS('🏃','Trote fácil','AM')],[SS('🏃','Tirada larga 8 km 👑','AM')],[SS('🏊','Nado regen','AM')]];
     if(wi===1) return [[SS('🚴','Bici Z2','AM'),SS('🏋️','Pierna','PM')],[SS('🏃','Carrera Calidad','AM'),SS('🏋️','Push','PM')],[SS('🏊','Natación','AM'),SS('🏋️','Pull','PM')],[SS('🏃','Trote fácil','AM')],[{ic:'✈️',t:'Vuelo 6am · bici/elíptica suave opcional',tod:''}],[{ic:'🏋️',t:'Torso ligero opcional (sin pierna)',tod:''}],[SS('🏃','Tirada larga 11 km 👑','PM')]];
