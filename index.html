@@ -378,7 +378,7 @@
   function genWeek(km){return [[SS('🚴','Bici Z2','AM'),SS('🏋️','Push','PM')],[SS('🏃','Calidad','AM'),SS('🏋️','Pierna','PM')],[SS('🚴','Bici Z2','AM'),SS('🏋️','Pull','PM')],[SS('🏃','Trote fácil','AM')],[SS('🏊','Natación suave','AM')],[SS('🏃','Tirada larga '+km+' km 👑','AM')],[SS('🏊','Natación regen','AM')]];}
   function weekData(wi){
     if(wi===0) return [[{ic:'🏋️',t:'Espalda + Tríceps',tod:'PM',pre:true},{ic:'🏃',t:'Trote',tod:'AM',pre:true}],[SS('🏃','Carrera Calidad','AM')],[SS('🏊','Natación','AM'),SS('🏋️','Pecho+Hombro+Bíceps','PM')],[SS('🚴','Bici Z2','AM'),SS('🏋️','Pierna','PM')],[SS('🏃','Trote fácil','AM')],[SS('🏃','Tirada larga 8 km 👑','AM')],[SS('🏊','Nado regen','AM')]];
-    if(wi===1) return [[SS('🚴','Bici Z2','AM'),SS('🏋️','Pierna','PM')],[SS('🏃','Carrera Calidad','AM'),SS('🏋️','Push','PM')],[SS('🏊','Natación','AM'),SS('🏋️','Pull','PM')],[SS('🏃','Trote fácil','AM')],[{ic:'✈️',t:'Vuelo 6am · bici/elíptica suave opcional',tod:''}],[{ic:'🏋️',t:'Torso ligero opcional (sin pierna)',tod:''}],[SS('🏃','Tirada larga 11 km 👑','PM')]];
+    if(wi===1) return [[SS('🚴','Bici Z2','AM'),SS('🏋️','Pierna','PM')],[SS('🏃','Calidad','AM')],[SS('😴','Descanso','')],[SS('🚴','Bici Z2','AM'),SS('🏋️','Push','PM')],[SS('✈️','Vuelo 6am · Puebla','AM'),SS('🚴','Bici suave','PM'),SS('🏋️','Pull','PM')],[SS('💑','Con novia','')],[SS('🏃','Tirada larga 11 km 👑','PM')]];
     if(wi===7) return [[SS('😴','Descanso','')],[SS('🏃','Trote + rectas','AM')],[SS('🚴','Spin suave','AM')],[SS('😴','Descanso','')],[SS('🏃','Soltura 20′','AM')],[SS('😴','Descanso + carga','')],[SS('🏁','CARRERA 30 KM','AM')]];
     return genWeek(LR[wi]);
   }
