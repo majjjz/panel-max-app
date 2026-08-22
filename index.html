@@ -177,9 +177,9 @@
     <div class="view" id="dieta">
       <div style="margin-top:6px;display:flex;align-items:flex-end;justify-content:space-between;gap:8px">
         <div><h2 style="margin:0">Diario</h2><div class="sub" id="dietaSub"></div></div>
-        <label style="font-size:10px;color:var(--mut);text-align:right;line-height:1.3">📅 Día a registrar<br><input type="date" id="regDate" onchange="onRegDate()" style="margin-top:2px;background:#211C16;color:#EFE7D8;border:1px solid #3a3229;border-radius:8px;padding:4px 6px;font-size:12px"></label>
+        <label style="font-size:10px;color:var(--mut);text-align:right;line-height:1.3">📅 Día a ver / registrar<br><input type="date" id="regDate" onchange="onRegDate()" style="margin-top:2px;background:#211C16;color:#EFE7D8;border:1px solid #3a3229;border-radius:8px;padding:4px 6px;font-size:12px"></label>
       </div>
-      <div class="card" id="regDateBanner" style="display:none;border-left:3px solid #B0895F;background:#2a2118;font-size:12px;padding:8px 10px;margin-top:6px">⚠️ Estás registrando en <b id="regDateLbl"></b>, no en hoy. Cambia la fecha a hoy para volver a lo normal.</div>
+      <div class="card" id="regDateBanner" style="display:none;border-left:3px solid #B0895F;background:#2a2118;font-size:12px;padding:8px 10px;margin-top:6px">📅 Estás viendo <b id="regDateLbl"></b> — el diario y lo que registres son de ESE día. Regresa la fecha a hoy para volver.</div>
       <div class="card"><div class="rings" id="ringsDiet"></div>
         <div style="text-align:center;font-size:12px;color:var(--mut)" id="dietTxt">Proteína el número héroe</div></div>
       <div class="sectitle">📋 Qué comer hoy <span id="planKcal" class="sub" style="text-transform:none;letter-spacing:0"></span></div>
@@ -304,7 +304,7 @@
     if(q.get('api')){localStorage.setItem('pm_api',q.get('api'));if(q.get('token'))localStorage.setItem('pm_token',q.get('token'));history.replaceState(null,'',location.pathname);}
   }catch(e){}
 
-  var FNS=['getInit','addFood','addScanned','logPlanMeal','deleteFood','moveFood','updateGrams','togglePlan','addWeight','addWater','logByText','logByPhoto','weeklyReport','getPanel','refreshGarmin'];
+  var FNS=['getInit','getDay','addFood','addScanned','logPlanMeal','copyDay','deleteFood','moveFood','updateGrams','togglePlan','addWeight','addWater','logByText','logByPhoto','weeklyReport','getPanel','refreshGarmin'];
   var CACHEABLE={getInit:1,getPanel:1};
   function cfg(){return {url:localStorage.getItem('pm_api')||'',token:localStorage.getItem('pm_token')||''};}
 
@@ -409,7 +409,8 @@
     macroSet(document.getElementById('ringsHome'));macroSet(document.getElementById('ringsDiet'));
     var rem=S.targets.kcal-Math.round(S.diary.tot.kcal);
     document.getElementById('balTxt').innerHTML='Comido <b style="color:var(--txt)">'+Math.round(S.diary.tot.kcal)+'</b> · Objetivo '+S.targets.kcal+' · Restante <b style="color:var(--sage)">'+rem+'</b>';
-    document.getElementById('dietTxt').textContent='Proteína el número héroe · '+Math.round(S.diary.tot.kcal)+' / '+S.targets.kcal+' kcal';
+    var pRem=Math.max(0,S.targets.p-Math.round(S.diary.tot.p));
+    document.getElementById('dietTxt').innerHTML='Te quedan <b style="color:var(--sage)">'+rem+' kcal</b> y <b style="color:var(--acc)">'+pRem+' g de proteína</b>';
     var wi=curWeekIndex(),di=curDayIdx(),sess=weekData(wi)[di]||[];
     document.getElementById('hoyToca').innerHTML=sess.length?'<div style="font-size:26px">'+sess[0].ic+'</div><div style="flex:1"><b>'+sess.map(function(s){return s.t;}).join(' + ')+'</b><div class="sub">'+sess.map(function(s){return s.tod;}).filter(Boolean).join(' / ')+'</div></div>':'<div class="sub">Descanso</div>';
     renderPlan();renderMeals();renderRecents();renderEntrenos();renderAgenda();renderWater();renderRacha();renderTip();renderPlanComida();
@@ -436,7 +437,7 @@
   }
   function logPlan(m){
     var its=(window._mp||mealPlan())[m];
-    if(window.google&&google.script&&google.script.run){google.script.run.withSuccessHandler(function(d){apply(d);toast('✓ '+m+' registrado');}).withFailureHandler(function(){toast('Error');}).logPlanMeal(m,JSON.stringify(its));}
+    if(window.google&&google.script&&google.script.run){var rp=google.script.run.withSuccessHandler(function(d){apply(d);toast('✓ '+m+' registrado');}).withFailureHandler(function(){toast('Error');});rp.logPlanMeal.apply(rp,[m,JSON.stringify(its)].concat(dateArg()));}
     else{curMeal=m;its.forEach(function(x){demoAdd({name:x.name,kcal:(S.foods.find(function(y){return y.name===x.name;})||{kcal:0}).kcal,p:0,c:0,f:0},x.gramos);});apply(S.diary);toast('✓ (demo) '+m);}
   }
   function renderWater(){var w=S.water||{today:0,goal:3500};document.getElementById('wtTxt').textContent=(w.today||0)+' / '+(w.goal||3500)+' ml';document.getElementById('wtFill').style.width=Math.min(100,(w.today||0)/(w.goal||3500)*100)+'%';}
@@ -490,13 +491,16 @@
       html+='<div class="addr" onclick="openAdd(\''+m+'\')">＋ Agregar alimento</div></div>';
     });
     document.getElementById('meals').innerHTML=html;
-    document.getElementById('dietaSub').textContent=new Date().toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'short'});
+    var dp=(window.REGDATE||'').split('-');
+    var dLbl=(dp.length===3)?new Date(+dp[0],+dp[1]-1,+dp[2]):new Date();
+    document.getElementById('dietaSub').textContent=dLbl.toLocaleDateString('es-MX',{weekday:'long',day:'numeric',month:'short'});
   }
   function renderRecents(){
     var r=S.diary.recents.length?S.diary.recents:S.foods.slice(0,5).map(function(f){return f.name;});
     var html=r.slice(0,6).map(function(n){return '<div class="chip" onclick="quick(\''+n.replace(/'/g,"")+'\')">'+n+'</div>';}).join('');
     html+='<div class="chip scan" onclick="openTextLog()">✍️ Describir</div>';
     html+='<div class="chip scan" onclick="startPhotoAI()">📷 Foto IA</div>';
+    html+='<div class="chip scan" onclick="copyYesterday()">⏪ Copiar ayer</div>';
     document.getElementById('recents').innerHTML=html;
   }
   function renderEntrenos(){
@@ -527,7 +531,7 @@
       if(d.entrenos&&d.entrenos.length)chips+='<span>🏋️ '+d.entrenos.join(', ')+'</span>';
       if(d.sueno)chips+='<span>😴 '+nd(d.sueno,1)+'h</span>';
       if(!chips)chips='<span style="color:var(--mut)">sin datos</span>';
-      return '<div class="agd"><div class="agdh">'+dow+' · '+lbl+'</div><div class="agrow">'+chips+'</div></div>';
+      return '<div class="agd" onclick="verDia(\''+d.fecha+'\')" style="cursor:pointer"><div class="agdh">'+dow+' · '+lbl+' <span style="float:right;color:var(--acc);font-size:11px">ver día ›</span></div><div class="agrow">'+chips+'</div></div>';
     }).join('');
     document.getElementById('agList').innerHTML=html||'<div class="sub" style="margin-top:14px">Aún sin datos.</div>';
   }
@@ -562,7 +566,20 @@
   function todayISO(){var t=new Date();return t.getFullYear()+'-'+('0'+(t.getMonth()+1)).slice(-2)+'-'+('0'+t.getDate()).slice(-2);}
   var REGDATE=todayISO();
   function dateArg(){return (REGDATE&&REGDATE!==todayISO())?[REGDATE]:[];}
-  window.onRegDate=function(){var el=document.getElementById('regDate');var v=(el&&el.value)||todayISO();REGDATE=v;var off=(v!==todayISO());var b=document.getElementById('regDateBanner');if(b)b.style.display=off?'block':'none';if(off){var l=document.getElementById('regDateLbl');if(l)l.textContent=v;}};
+  window.onRegDate=function(){var el=document.getElementById('regDate');var v=(el&&el.value)||todayISO();REGDATE=v;var off=(v!==todayISO());var b=document.getElementById('regDateBanner');if(b)b.style.display=off?'block':'none';if(off){var l=document.getElementById('regDateLbl');if(l)l.textContent=v;}
+    // ⭐ carga el diario del día seleccionado (no solo registrar en él)
+    if(window.google&&google.script&&google.script.run){google.script.run.withSuccessHandler(function(d){apply(d);}).withFailureHandler(function(){toast('No pude cargar ese día (¿actualizaste Code.gs?)');}).getDay(v);}
+  };
+  function copyYesterday(){
+    var t=REGDATE.split('-');var d=new Date(+t[0],+t[1]-1,+t[2]);d.setDate(d.getDate()-1);
+    var y=d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);
+    if(!(window.google&&google.script&&google.script.run)){toast('Solo en la app real');return;}
+    google.script.run.withSuccessHandler(function(dd){apply(dd);toast('⏪ Copiado de '+y);}).withFailureHandler(function(){toast('Error (¿actualizaste Code.gs?)');}).copyDay(y,REGDATE);
+  }
+  function verDia(f){
+    var el=document.getElementById('regDate');if(el)el.value=f;onRegDate();
+    go('dieta',document.querySelector('.nav button[data-v="dieta"]'));
+  }
   try{var _rd=document.getElementById('regDate');if(_rd)_rd.value=todayISO();}catch(e){}
   function apply(diary){S.diary=diary;render();}
   function srv(fn,args,ok){if(window.google&&google.script&&google.script.run){var r=google.script.run.withSuccessHandler(ok).withFailureHandler(function(){toast('Error');});r[fn].apply(r,args);}else{ok(localOp(fn,args));}}
@@ -574,27 +591,6 @@
     if(fn==='moveFood'){var x=findItem(a[0]);if(x){d.meals[x.m].splice(x.i,1);if(!d.meals[a[1]])d.meals[a[1]]=[];d.meals[a[1]].push(x.it);}}
     if(fn==='updateGrams'){var x=findItem(a[0]);if(x){var f=S.foods.find(function(y){return y.name===x.it.alimento;})||{kcal:0,p:0,c:0,f:0};x.it.gramos=a[1];x.it.kcal=f.kcal*a[1]/100;x.it.p=f.p*a[1]/100;x.it.c=f.c*a[1]/100;x.it.f=f.f*a[1]/100;}}
     var tot={kcal:0,p:0,c:0,f:0};for(var m in d.meals)d.meals[m].forEach(function(it){tot.kcal+=it.kcal;tot.p+=it.p;tot.c+=it.c;tot.f+=it.f;});d.tot=tot;return d;
-  }
-  function startScan(){document.getElementById('scanInput').click();}
-  function handleScan(e){
-    var file=e.target.files[0];e.target.value='';if(!file)return;
-    if(!('BarcodeDetector' in window)){toast('Tu navegador no soporta escáner');return;}
-    toast('Leyendo código...');
-    createImageBitmap(file).then(function(bmp){
-      var det=new BarcodeDetector({formats:['ean_13','ean_8','upc_a','upc_e']});
-      return det.detect(bmp);
-    }).then(function(codes){
-      if(!codes||!codes.length){toast('No detecté código, reintenta');return;}
-      var bc=codes[0].rawValue;toast('Código '+bc+'...');
-      return fetch('https://world.openfoodfacts.org/api/v2/product/'+bc+'.json?fields=product_name,brands,nutriments').then(function(r){return r.json();}).then(function(j){
-        if(j.status!==1){toast('No está en Open Food Facts');return;}
-        var n=j.product.nutriments||{};
-        var name=((j.product.product_name||j.product.brands||('Producto '+bc))+'').substring(0,40);
-        var food={name:name,kcal:Math.round(n['energy-kcal_100g']||0),p:+(n['proteins_100g']||0),c:+(n['carbohydrates_100g']||0),f:+(n['fat_100g']||0)};
-        if(!S.foods.some(function(x){return x.name===food.name;}))S.foods.unshift(food);
-        openAdd(curMeal||'Snack');selectFood(food,true);toast('✓ '+name);
-      });
-    }).catch(function(){toast('Error al escanear');});
   }
   function demoAdd(f,g){if(!S.diary.meals[curMeal])S.diary.meals[curMeal]=[];S.diary.meals[curMeal].push({row:Date.now()%100000,alimento:f.name,gramos:g,kcal:f.kcal*g/100,p:f.p*g/100,c:f.c*g/100,f:f.f*g/100});var tot={kcal:0,p:0,c:0,f:0};for(var m in S.diary.meals)S.diary.meals[m].forEach(function(it){tot.kcal+=it.kcal;tot.p+=it.p;tot.c+=it.c;tot.f+=it.f;});S.diary.tot=tot;}
   function saveFood(){if(!picked){toast('Elige un alimento');return;}var g=+document.getElementById('inpG').value;if(!g){toast('Pon los gramos');return;}

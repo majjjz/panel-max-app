@@ -10,9 +10,9 @@
  *    (el token es lo que protege; sin token válido no responde nada)
  ***/
 
-var API_ALLOW = ['getInit', 'addFood', 'addScanned', 'logPlanMeal', 'deleteFood', 'moveFood',
-  'updateGrams', 'togglePlan', 'addWeight', 'addWater', 'logByText', 'logByPhoto',
-  'weeklyReport', 'getPanel', 'refreshGarmin'];
+var API_ALLOW = ['getInit', 'getDay', 'addFood', 'addScanned', 'logPlanMeal', 'copyDay',
+  'deleteFood', 'moveFood', 'updateGrams', 'togglePlan', 'addWeight', 'addWater',
+  'logByText', 'logByPhoto', 'weeklyReport', 'getPanel', 'refreshGarmin'];
 
 /* Dispara el workflow del bot Garmin (majjjz/panel-max-bot, daily-garmin.yml id 332129251).
  * El bot tarda ~1-2 min en escribir al Sheet. */
