@@ -175,7 +175,11 @@
 
     <!-- DIARIO -->
     <div class="view" id="dieta">
-      <div style="margin-top:6px"><h2>Diario</h2><div class="sub" id="dietaSub"></div></div>
+      <div style="margin-top:6px;display:flex;align-items:flex-end;justify-content:space-between;gap:8px">
+        <div><h2 style="margin:0">Diario</h2><div class="sub" id="dietaSub"></div></div>
+        <label style="font-size:10px;color:var(--mut);text-align:right;line-height:1.3">📅 Día a registrar<br><input type="date" id="regDate" onchange="onRegDate()" style="margin-top:2px;background:#211C16;color:#EFE7D8;border:1px solid #3a3229;border-radius:8px;padding:4px 6px;font-size:12px"></label>
+      </div>
+      <div class="card" id="regDateBanner" style="display:none;border-left:3px solid #B0895F;background:#2a2118;font-size:12px;padding:8px 10px;margin-top:6px">⚠️ Estás registrando en <b id="regDateLbl"></b>, no en hoy. Cambia la fecha a hoy para volver a lo normal.</div>
       <div class="card"><div class="rings" id="ringsDiet"></div>
         <div style="text-align:center;font-size:12px;color:var(--mut)" id="dietTxt">Proteína el número héroe</div></div>
       <div class="sectitle">📋 Qué comer hoy <span id="planKcal" class="sub" style="text-transform:none;letter-spacing:0"></span></div>
@@ -437,7 +441,7 @@
   }
   function renderWater(){var w=S.water||{today:0,goal:3500};document.getElementById('wtTxt').textContent=(w.today||0)+' / '+(w.goal||3500)+' ml';document.getElementById('wtFill').style.width=Math.min(100,(w.today||0)/(w.goal||3500)*100)+'%';}
   function addAgua(ml){
-    if(window.google&&google.script&&google.script.run){google.script.run.withSuccessHandler(function(w){S.water=w;renderWater();toast(ml>0?'💧 +'+ml+' ml':'💧 '+ml+' ml');}).withFailureHandler(function(){toast('Error');}).addWater(ml);}
+    if(window.google&&google.script&&google.script.run){var ra=google.script.run.withSuccessHandler(function(w){S.water=w;renderWater();toast(ml>0?'💧 +'+ml+' ml':'💧 '+ml+' ml');}).withFailureHandler(function(){toast('Error');});ra.addWater.apply(ra,[ml].concat(dateArg()));}
     else{if(!S.water)S.water={today:0,goal:3500};S.water.today=Math.max(0,(S.water.today||0)+ml);renderWater();toast('💧');}
   }
   function renderRacha(){
@@ -555,6 +559,11 @@
   function quick(name){openAdd(curMeal);pickFood(name);}
   document.querySelectorAll('#segMeal button').forEach(function(b){b.onclick=function(){curMeal=b.dataset.m;document.querySelectorAll('#segMeal button').forEach(function(x){x.classList.remove('on');});b.classList.add('on');};});
 
+  function todayISO(){var t=new Date();return t.getFullYear()+'-'+('0'+(t.getMonth()+1)).slice(-2)+'-'+('0'+t.getDate()).slice(-2);}
+  var REGDATE=todayISO();
+  function dateArg(){return (REGDATE&&REGDATE!==todayISO())?[REGDATE]:[];}
+  window.onRegDate=function(){var el=document.getElementById('regDate');var v=(el&&el.value)||todayISO();REGDATE=v;var off=(v!==todayISO());var b=document.getElementById('regDateBanner');if(b)b.style.display=off?'block':'none';if(off){var l=document.getElementById('regDateLbl');if(l)l.textContent=v;}};
+  try{var _rd=document.getElementById('regDate');if(_rd)_rd.value=todayISO();}catch(e){}
   function apply(diary){S.diary=diary;render();}
   function srv(fn,args,ok){if(window.google&&google.script&&google.script.run){var r=google.script.run.withSuccessHandler(ok).withFailureHandler(function(){toast('Error');});r[fn].apply(r,args);}else{ok(localOp(fn,args));}}
   function localOp(fn,a){ // demo local
@@ -590,11 +599,12 @@
   function demoAdd(f,g){if(!S.diary.meals[curMeal])S.diary.meals[curMeal]=[];S.diary.meals[curMeal].push({row:Date.now()%100000,alimento:f.name,gramos:g,kcal:f.kcal*g/100,p:f.p*g/100,c:f.c*g/100,f:f.f*g/100});var tot={kcal:0,p:0,c:0,f:0};for(var m in S.diary.meals)S.diary.meals[m].forEach(function(it){tot.kcal+=it.kcal;tot.p+=it.p;tot.c+=it.c;tot.f+=it.f;});S.diary.tot=tot;}
   function saveFood(){if(!picked){toast('Elige un alimento');return;}var g=+document.getElementById('inpG').value;if(!g){toast('Pon los gramos');return;}
     document.getElementById('saveBtn').textContent='Guardando...';
-    var done=function(diary){apply(diary);closeAdd();document.getElementById('saveBtn').textContent='Agregar';toast('✓ Agregado');if(!S.foods.some(function(x){return x.name===picked.name;}))S.foods.unshift({name:picked.name,kcal:picked.kcal,p:picked.p,c:picked.c,f:picked.f});picked=null;};
+    var done=function(diary){apply(diary);closeAdd();document.getElementById('saveBtn').textContent='Agregar';toast(REGDATE!==todayISO()?('✓ Guardado en '+REGDATE):'✓ Agregado');if(!S.foods.some(function(x){return x.name===picked.name;}))S.foods.unshift({name:picked.name,kcal:picked.kcal,p:picked.p,c:picked.c,f:picked.f});picked=null;};
     var fail=function(){toast('Error');document.getElementById('saveBtn').textContent='Agregar';};
     if(window.google&&google.script&&google.script.run){
-      if(picked.isNew)google.script.run.withSuccessHandler(done).withFailureHandler(fail).addScanned(curMeal,picked.name,g,picked.kcal,picked.p,picked.c,picked.f);
-      else google.script.run.withSuccessHandler(done).withFailureHandler(fail).addFood(curMeal,picked.name,g);
+      var r=google.script.run.withSuccessHandler(done).withFailureHandler(fail);
+      if(picked.isNew)r.addScanned.apply(r,[curMeal,picked.name,g,picked.kcal,picked.p,picked.c,picked.f].concat(dateArg()));
+      else r.addFood.apply(r,[curMeal,picked.name,g].concat(dateArg()));
     } else {demoAdd(picked,g);done(S.diary);}
   }
 
@@ -624,7 +634,7 @@
   function openWeight(){document.getElementById('wKg').value=(S.peso&&S.peso.latest)||'';document.getElementById('wTrend').innerHTML=weightSpark();document.getElementById('wmodal').classList.add('on');}
   function closeWeight(){document.getElementById('wmodal').classList.remove('on');}
   function saveWeight(){var kg=+document.getElementById('wKg').value;if(!kg){toast('Pon el peso');return;}
-    if(window.google&&google.script&&google.script.run){google.script.run.withSuccessHandler(function(p){S.peso=p;render();closeWeight();toast('✓ Peso guardado');}).withFailureHandler(function(){toast('Error');}).addWeight(kg);}
+    if(window.google&&google.script&&google.script.run){var rw=google.script.run.withSuccessHandler(function(p){S.peso=p;render();closeWeight();toast(REGDATE!==todayISO()?('✓ Peso guardado en '+REGDATE):'✓ Peso guardado');}).withFailureHandler(function(){toast('Error');});rw.addWeight.apply(rw,[kg].concat(dateArg()));}
     else{if(!S.peso)S.peso={latest:'',byDate:{}};S.peso.latest=kg;var t=new Date();var ds=t.getFullYear()+'-'+('0'+(t.getMonth()+1)).slice(-2)+'-'+('0'+t.getDate()).slice(-2);S.peso.byDate[ds]=kg;render();closeWeight();toast('✓ Peso guardado');}}
 
   /* ---- IA: describir, foto, reporte ---- */
