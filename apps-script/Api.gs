@@ -12,7 +12,7 @@
 
 var API_ALLOW = ['getInit', 'getDay', 'addFood', 'addScanned', 'logPlanMeal', 'copyDay',
   'deleteFood', 'moveFood', 'updateGrams', 'togglePlan', 'addWeight', 'addWater',
-  'logByText', 'logByPhoto', 'weeklyReport', 'getPanel', 'refreshGarmin'];
+  'logByText', 'logByPhoto', 'weeklyReport', 'getPanel', 'refreshGarmin', 'savePlanDay'];
 
 /* Dispara el workflow del bot Garmin (majjjz/panel-max-bot, daily-garmin.yml id 332129251).
  * El bot tarda ~1-2 min en escribir al Sheet. */
