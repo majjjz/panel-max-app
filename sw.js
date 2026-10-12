@@ -1,5 +1,5 @@
 /* Panel Max — service worker: shell offline, red primero para actualizar rápido */
-var CACHE = 'panel-max-v4';
+var CACHE = 'panel-max-v5';
 var SHELL = ['./', './index.html', './manifest.json', './icons/icon-192.png', './icons/icon-512.png'];
 
 self.addEventListener('install', function (e) {
