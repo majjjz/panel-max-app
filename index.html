@@ -58,6 +58,10 @@
   .ps .tod{font-size:9px;font-weight:800;padding:2px 6px;border-radius:5px;background:var(--card2);color:var(--mut)}
   .ps .tod.AM{color:#cbb287} .ps .tod.PM{color:#b0895f}
   .ps .tt{flex:1;font-size:13.5px} .ps.rest{opacity:.5}
+  .rtb{font-size:11px;font-weight:800;padding:4px 9px;border-radius:8px;background:var(--card2);border:1px solid var(--acc);color:var(--acc);cursor:pointer;white-space:nowrap}
+  .rx{display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
+  .rx:last-child{border-bottom:0} .rx .n{flex:1} .rx .sr{font-weight:800;color:var(--txt);white-space:nowrap;font-variant-numeric:tabular-nums}
+  .rx .ef{display:block;font-size:11px;color:var(--acc);margin-top:2px}
   .pbar{height:9px;background:#0e0b07;border:1px solid var(--line);border-radius:999px;overflow:hidden;margin-top:8px}
   .pfill{height:100%;background:linear-gradient(90deg,var(--clay),var(--acc))}
   .ladder{display:flex;gap:5px;margin-top:12px} .lw{flex:1;text-align:center;background:var(--card2);border:1px solid var(--line);border-radius:9px;padding:7px 1px}
@@ -285,6 +289,15 @@
     <div id="rBody" style="white-space:pre-wrap;line-height:1.55;font-size:14px;margin-top:8px;color:var(--txt)"></div>
   </div></div>
 
+  <!-- modal rutina de gym -->
+  <div class="modal" id="xmodal"><div class="sheet">
+    <button class="btnx" onclick="document.getElementById('xmodal').classList.remove('on')">×</button>
+    <h3 id="xTitle">📋 Rutina</h3>
+    <div class="sub" id="xSub"></div>
+    <div id="xBody" style="margin-top:6px"></div>
+    <div class="sub" id="xNote" style="margin-top:10px;line-height:1.5"></div>
+  </div></div>
+
   <!-- modal editar plan del día -->
   <div class="modal" id="pmodal"><div class="sheet">
     <button class="btnx" onclick="closePlanEdit()">×</button>
@@ -408,6 +421,24 @@
       [SS('😴','Descanso · ≥9k pasos + meal prep','')]
     ];
   }
+  var RUTINAS={
+    'Pierna A':['Fuerza · cuádriceps · ~60′',[['Sentadilla con barra','4 × 5-6','2 RIR, nunca al fallo'],['Prensa','3 × 8-10','1-2 RIR'],['Curl femoral acostado','3 × 10-12','1 RIR'],['Extensión de cuádriceps','2 × 12-15','última al fallo'],['Pantorrilla de pie','4 × 10-12','1 RIR'],['Plancha / rueda abdominal','3 × 30-45″','—']]],
+    'Push A':['Fuerza · pecho · ~60′',[['Press banca barra','4 × 5-6','1-2 RIR'],['Press militar de pie','3 × 6-8','2 RIR'],['Press inclinado mancuernas','3 × 8-10','1 RIR'],['Fondos (lastre si puedes)','2 × 8-10','1 RIR'],['Elevaciones laterales','3 × 12-15','última al fallo'],['Tríceps polea cuerda','3 × 10-12','última al fallo']]],
+    'Pull A':['Fuerza · espalda · ~60′',[['Dominadas lastradas / jalón pesado','4 × 6-8','1-2 RIR'],['Remo con barra','4 × 6-8','2 RIR'],['Remo pecho apoyado','3 × 8-10','1 RIR'],['Face pull','3 × 15','—'],['Curl barra','3 × 8-10','última al fallo'],['Curl martillo','2 × 10-12','al fallo']]],
+    'Pierna B':['Hipertrofia · bisagra y glúteo · ~60′',[['Peso muerto rumano','3 × 6-8','2 RIR, nunca al fallo'],['Hip thrust','3 × 8-10','1 RIR'],['Hack squat / prensa pies bajos','3 × 10-12','1-2 RIR'],['Curl femoral sentado','3 × 10-12','última al fallo'],['Abductor','2 × 15','al fallo'],['Pantorrilla sentado','3 × 12-15','1 RIR']]],
+    'Push B':['Hipertrofia · hombro · ~60′',[['Press hombro mancuernas sentado','3 × 8-10','1 RIR'],['Press inclinado máquina / Smith','3 × 8-10','1 RIR'],['Aperturas en polea','3 × 12-15','última al fallo'],['Elevaciones laterales','4 × 12-20','últimas 2 al fallo'],['Pájaros / reverse fly','3 × 15','al fallo'],['Extensión tríceps sobre cabeza','3 × 10-12','al fallo']]],
+    'Pull B':['Hipertrofia · espalda y brazo · ~60′',[['Jalón agarre neutro','3 × 10-12','1 RIR'],['Remo sentado en polea','3 × 10-12','1 RIR'],['Remo unilateral mancuerna','3 × 10 / lado','1 RIR'],['Pullover en polea','2 × 12-15','al fallo'],['Curl inclinado + tríceps polea (superserie)','3 × 12','al fallo'],['Encogimientos','3 × 12','1 RIR']]],
+    'Circuito Hyrox':['4 rondas · descanso 2′ entre rondas',[['Remo','500 m','ritmo Hyrox'],['Wall balls (6 kg)','20','sin parar'],['Zancadas con saco (20 kg)','20 pasos','—']]]
+  };
+  function rutinaKey(t){t=String(t||'');if(/Circuito Hyrox/.test(t))return 'Circuito Hyrox';var m=t.match(/(Pierna|Push|Pull) (A|B)/);return m?m[1]+' '+m[2]:null;}
+  function openRutina(k,wk){
+    var r=RUTINAS[k];if(!r)return;var w1=(wk===0);
+    document.getElementById('xTitle').textContent='📋 '+k;
+    document.getElementById('xSub').textContent=r[0]+(w1?' · SEMANA 1: todo a 3 RIR y 1 serie menos':'');
+    document.getElementById('xBody').innerHTML=r[1].map(function(e){var sr=e[1];if(w1&&/^\d/.test(sr)){var n=+sr[0];sr=Math.max(2,n-1)+sr.slice(1);}return '<div class="rx"><span class="n">'+e[0]+'<span class="ef">'+(w1&&e[2]!=='—'?'3 RIR':e[2])+'</span></span><span class="sr">'+sr+'</span></div>';}).join('');
+    document.getElementById('xNote').innerHTML=k==='Circuito Hyrox'?'Sin trineo/SkiErg: remo, wall balls con balón medicinal y zancadas con mancuerna.':'Calienta 5-8′ + 2 series de aproximación en el primer básico. Sobrecarga progresiva: si llegas al tope del rango en todas las series, sube peso la próxima. En déficit la meta es <b>mantener las cargas</b>.';
+    document.getElementById('xmodal').classList.add('on');
+  }
   function weekData(wi){
     var base=weekDataBase(wi);
     return base.map(function(day,di){var o=(S.planWeeks||{})[(OFF+wi)+'_'+di];return (o&&o.length)?o:day;});
@@ -438,7 +469,8 @@
     var pRem=Math.max(0,S.targets.p-Math.round(S.diary.tot.p));
     document.getElementById('dietTxt').innerHTML='Te quedan <b style="color:var(--sage)">'+rem+' kcal</b> y <b style="color:var(--acc)">'+pRem+' g de proteína</b>';
     var wi=curWeekIndex(),di=curDayIdx(),sess=weekData(wi)[di]||[];
-    document.getElementById('hoyToca').innerHTML=sess.length?'<div style="font-size:26px">'+sess[0].ic+'</div><div style="flex:1"><b>'+sess.map(function(s){return s.t;}).join(' + ')+'</b><div class="sub">'+sess.map(function(s){return s.tod;}).filter(Boolean).join(' / ')+'</div></div>':'<div class="sub">Descanso</div>';
+    var rk=null;sess.forEach(function(x){if(!rk)rk=rutinaKey(x.t);});
+    document.getElementById('hoyToca').innerHTML=sess.length?'<div style="font-size:26px">'+sess[0].ic+'</div><div style="flex:1"><b>'+sess.map(function(s){return s.t;}).join(' + ')+'</b><div class="sub">'+sess.map(function(s){return s.tod;}).filter(Boolean).join(' / ')+'</div></div>'+(rk?'<span class="rtb" onclick="openRutina(\''+rk+'\','+wi+')">📋 Rutina</span>':''):'<div class="sub">Descanso</div>';
     renderPlan();renderMeals();renderRecents();renderEntrenos();renderAgenda();renderWater();renderRacha();renderTip();renderPlanComida();
   }
   function mealPlan(){
@@ -499,7 +531,7 @@
       sess.forEach(function(s,si){
         if(s.ic==='😴'){html+='<div class="ps rest"><div class="dc"></div><span class="tt">'+s.ic+' '+s.t+'</span></div>';return;}
         var id='w'+(OFF+wi)+'_d'+di+'_s'+si;var isDone=(id in S.checks)?S.checks[id]:!!s.pre;total++;if(isDone)done++;
-        html+='<div class="ps" onclick="toggle(\''+id+'\','+isDone+')"><div class="dc '+(isDone?'ok':'')+'" id="'+id+'">'+(isDone?'✓':'')+'</div>'+(s.tod?'<span class="tod '+s.tod+'">'+s.tod+'</span>':'')+'<span class="tt">'+s.ic+' '+s.t+'</span></div>';
+        html+='<div class="ps" onclick="toggle(\''+id+'\','+isDone+')"><div class="dc '+(isDone?'ok':'')+'" id="'+id+'">'+(isDone?'✓':'')+'</div>'+(s.tod?'<span class="tod '+s.tod+'">'+s.tod+'</span>':'')+'<span class="tt">'+s.ic+' '+s.t+'</span>'+(rutinaKey(s.t)?'<span class="rtb" onclick="event.stopPropagation();openRutina(\''+rutinaKey(s.t)+'\','+wi+')">📋 Rutina</span>':'')+'</div>';
       });
       html+='</div>';
     });
